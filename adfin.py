@@ -25,7 +25,11 @@ for x in baca:
     konek = httplib.HTTPConnection(sys.argv[1], 80)
     konek.request("GET", x)
     r1 = konek.getresponse()
-    if(r1.status == "200"):
+    if r1.status == "200" || r1.status == "301":
         print "[+] Found: "+ x
-    else:
-        print "[-] Not Found: "+ x
+    elif r1.status == "500":
+        print "[-] (500) Internal Server Error: "+ x
+    elif r1.status == "403":
+        print "[-] (403) Forbidden: "+ x
+    elif r1.status == "404":
+        print "[-] (404) Not Found: "+ x
